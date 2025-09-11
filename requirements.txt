@@ -1,0 +1,30 @@
+# Core FastAPI dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic>=2.4.0
+pydantic-settings>=2.0.0
+
+# Document processing
+pymupdf>=1.23.0  # PyMuPDF for PDF processing
+python-docx>=0.8.11  # DOCX processing
+yake>=0.4.8  # YAKE keyword extraction (optional)
+
+# AI/ML model clients
+openai>=1.0.0  # OpenAI client for E2E Networks Qwen integration
+aiohttp>=3.9.0  # Async HTTP client for AI APIs
+httpx>=0.25.0  # Alternative HTTP client
+
+# Additional utilities
+python-dotenv>=1.0.0  # Environment variable management
+
+# Development and testing (optional but recommended)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Linting
+mypy>=1.5.0  # Type checking
+
+# Production monitoring (optional)
+# sentry-sdk[fastapi]>=1.32.0  # Error tracking
