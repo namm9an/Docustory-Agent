@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import health, upload, ask, sessions, voice_streaming, system, history, errors
+from app.api.v1.endpoints import health, upload, ask, sessions, voice_streaming, system, history, errors, audio_summary
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(voice_streaming.router)
 api_router.include_router(system.router)
 api_router.include_router(history.router)
 api_router.include_router(errors.router)
+api_router.include_router(audio_summary.router)

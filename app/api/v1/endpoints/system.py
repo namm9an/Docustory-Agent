@@ -12,7 +12,7 @@ from app.services.parser_service import DocumentParserService
 from app.services.yake_service import YAKEService
 from app.services.qwen_client import qwen_client
 from app.services.stt import whisper_client
-from app.services.microsoft_tts import xtts_client
+from app.services.tts import xtts_tts_client as xtts_client
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)

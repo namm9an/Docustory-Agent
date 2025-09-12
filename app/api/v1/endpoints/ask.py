@@ -12,7 +12,7 @@ from app.models.ask import (
 from app.core.session import session_manager
 from app.services.qwen_client import qwen_client
 from app.services.stt import whisper_client
-from app.services.microsoft_tts import xtts_client
+from app.services.tts import xtts_tts_client as xtts_client
 from app.services.yake_service import YAKEService
 from app.services.memory_service import memory_service
 from app.core.config import settings
