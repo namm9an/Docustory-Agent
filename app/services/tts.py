@@ -1,11 +1,23 @@
 import logging
 import asyncio
-import aiohttp
 import traceback
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
+try:
+    import aiohttp
+except ImportError as e:
+    aiohttp = None
+    logging.warning(f"aiohttp not available: {e}")
+
 logger = logging.getLogger(__name__)
+
+# Import config after defining logger to avoid circular imports
+try:
+    from app.core.config import settings
+except ImportError:
+    settings = None
+    logger.warning("Could not import settings from app.core.config")
 
 
 @dataclass
@@ -27,38 +39,51 @@ class XTTSv2TTSClient:
     """
     
     def __init__(self):
-        # XTTS v2 server endpoint
-        self.base_url = "http://192.168.2.183:8002"  # Your new XTTS v2 server endpoint
+        # XTTS v2 server endpoint - use config if available, fallback to default
+        if settings and hasattr(settings, 'TTS_ENDPOINT'):
+            self.base_url = settings.TTS_ENDPOINT.rstrip('/')
+        else:
+            self.base_url = "http://192.168.2.183:8002"  # Default fallback
+
         self.endpoint = f"{self.base_url}/generate-speech"
-        self.timeout = aiohttp.ClientTimeout(total=300)  # 5 minutes for long audio generation
         self.available_voices = {
             "Alice": "female",
             "Bob": "male"
         }
-        
-        logger.info(f"XTTS v2 TTS client initialized - Endpoint: {self.endpoint}")
-        logger.info("Using Coqui XTTS v2 multilingual model via Flask API")
+
+        # Check if aiohttp is available
+        if aiohttp is None:
+            logger.error("aiohttp is not available. Install with: pip install aiohttp")
+            self.client_available = False
+        else:
+            self.timeout = aiohttp.ClientTimeout(total=300)  # 5 minutes for long audio generation
+            self.client_available = True
+            logger.info(f"XTTS v2 TTS client initialized - Endpoint: {self.endpoint}")
+            logger.info("Using Coqui XTTS v2 multilingual model via Flask API")
     
     async def synthesize_speech(
-        self, 
-        text: str, 
+        self,
+        text: str,
         voice: str = "Alice"
     ) -> TTSResponse:
         """
         Convert text to speech using Vibe Voice API.
-        
+
         Args:
             text: Text to convert to speech
             voice: Speaker voice ("Alice" for female, "Bob" for male)
-            
+
         Returns:
             TTSResponse with audio content
         """
-        
+
+        if not self.client_available:
+            raise RuntimeError("XTTS v2 TTS client not available. Check aiohttp installation.")
+
         if voice not in self.available_voices:
             voice = "Alice"  # Default to Alice if invalid voice
             logger.warning(f"Invalid voice requested, defaulting to Alice")
-        
+
         try:
             logger.info(f"Generating speech with XTTS v2 for {len(text)} characters using voice: {voice}")
             
@@ -191,11 +216,14 @@ class XTTSv2TTSClient:
     
     async def _make_api_call(self, payload: Dict[str, Any]) -> bytes:
         """Make API call to XTTS v2 endpoint."""
-        
+
+        if not self.client_available or aiohttp is None:
+            raise RuntimeError("aiohttp not available for API call")
+
         headers = {
             "Content-Type": "application/json"
         }
-        
+
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             async with session.post(
                 self.endpoint,
@@ -223,7 +251,14 @@ class XTTSv2TTSClient:
     
     async def test_connection(self) -> Dict[str, Any]:
         """Test connection to XTTS v2 API."""
-        
+
+        if not self.client_available:
+            return {
+                "success": False,
+                "error": "XTTS v2 client not available",
+                "suggestion": "Install aiohttp: pip install aiohttp"
+            }
+
         try:
             test_text = "Hello, this is a test of the XTTS v2 system."
             response = await self.synthesize_speech(test_text, "Alice")

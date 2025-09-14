@@ -82,7 +82,12 @@ async def generate_audio_summary(request: AudioSummaryRequest):
         
         # Generate audio using XTTS v2 TTS
         logger.info(f"Converting text to speech with XTTS v2 voice: {request.voice}")
-        
+
+        # Check if TTS client is available
+        if not hasattr(xtts_tts_client, 'client_available') or not xtts_tts_client.client_available:
+            logger.warning("XTTS v2 TTS client not available, using mock audio")
+            raise RuntimeError("TTS client not available")
+
         try:
             if len(text_content) > 1000:  # For long texts, use chunked processing
                 tts_responses = await xtts_tts_client.synthesize_speech_chunked(
@@ -90,17 +95,17 @@ async def generate_audio_summary(request: AudioSummaryRequest):
                     voice=request.voice,
                     chunk_size=500
                 )
-                
+
                 # Combine all audio chunks
                 combined_audio = b""
                 total_duration = 0.0
-                
+
                 for response in tts_responses:
                     combined_audio += response.audio_content
                     total_duration += response.duration
-                
+
                 audio_content = combined_audio
-                
+
             else:
                 # For shorter texts, use direct synthesis
                 tts_response = await xtts_tts_client.synthesize_speech(
@@ -227,14 +232,18 @@ async def _generate_summary(document_content: str, target_length: str, word_targ
 @router.get("/test_tts")
 async def test_tts_connection():
     """Test endpoint for XTTS v2 TTS connection."""
-    
+
     try:
         test_result = await xtts_tts_client.test_connection()
         return test_result
-        
+
     except Exception as e:
         logger.error(f"TTS test failed: {e}")
-        raise HTTPException(status_code=500, detail=f"TTS test failed: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "suggestion": "Check TTS server and network connection"
+        }
 
 
 @router.get("/debug_session/{session_id}")
