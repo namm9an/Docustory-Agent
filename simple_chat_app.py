@@ -196,6 +196,37 @@ def ask_question(session_id: str, question: str) -> Optional[dict]:
         st.error(f"Question error: {str(e)}")
         return None
 
+def process_voice_question(session_id: str, audio_bytes: bytes) -> Optional[dict]:
+    """Process voice question using Whisper + Qwen"""
+    try:
+        # Prepare the audio file for upload
+        files = {
+            "voice_file": ("voice_question.wav", audio_bytes, "audio/wav")
+        }
+        data = {
+            "session_id": session_id,
+            "voice_enabled": True,
+            "conversation": True
+        }
+        
+        # Send to voice processing endpoint
+        response = requests.post(
+            f"{API_BASE_URL}/voice_stream/upload_and_ask", 
+            files=files, 
+            data=data,
+            timeout=30  # Voice processing can take longer
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Voice processing failed: {response.text}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Voice processing error: {str(e)}")
+        return None
+
 def generate_audio_summary(session_id: str, summary_type: str, voice: str = "Alice") -> Optional[bytes]:
     """Generate audio summary of the document"""
     try:
@@ -391,18 +422,46 @@ def main():
                     st.audio(audio_bytes, format="audio/wav")
                     
                     if st.button("🎵 Process Voice Question", type="primary"):
-                        st.session_state.messages.append({
-                            "role": "user", 
-                            "content": "🎤 Audio question"
-                        })
-                        
                         with st.spinner("🎤 Processing audio with Whisper + Qwen..."):
-                            from io import BytesIO
-                            audio_file = BytesIO(audio_bytes)
-                            audio_file.name = "voice_question.wav"
+                            # Process voice question using backend API
+                            voice_response = process_voice_question(st.session_state.session_id, audio_bytes)
                             
-                            # Process voice question (you'll need to implement this)
-                            st.success("🎉 Voice processing coming soon!")
+                            if voice_response and "transcribed_text" in voice_response and "answer" in voice_response:
+                                # Add transcribed question to chat
+                                transcribed_text = voice_response["transcribed_text"]
+                                st.session_state.messages.append({
+                                    "role": "user", 
+                                    "content": f"🎤 {transcribed_text}"
+                                })
+                                
+                                # Add AI response to chat
+                                ai_answer = voice_response["answer"]
+                                st.session_state.messages.append({
+                                    "role": "assistant", 
+                                    "content": ai_answer
+                                })
+                                
+                                st.success(f"✅ Voice processed! Question: '{transcribed_text[:50]}...'")
+                                
+                                # Show processing details
+                                with st.expander("🎤 Voice Processing Details"):
+                                    st.json({
+                                        "Transcribed Text": transcribed_text,
+                                        "Confidence": voice_response.get("transcription_confidence", "N/A"),
+                                        "Processing Time": f"{voice_response.get('processing_time_seconds', 0):.2f}s",
+                                        "Model": voice_response.get("model_used", "Whisper + Qwen")
+                                    })
+                            else:
+                                error_msg = "Sorry, I couldn't process your voice question. Please try again or type your question."
+                                st.session_state.messages.append({
+                                    "role": "user", 
+                                    "content": "🎤 Audio question (failed)"
+                                })
+                                st.session_state.messages.append({
+                                    "role": "assistant", 
+                                    "content": error_msg
+                                })
+                                st.error("Voice processing failed. Please try again.")
                         
                         st.rerun()
             
@@ -434,7 +493,7 @@ def main():
                 Ask questions and get intelligent answers from your documents
                 
                 **🎤 Voice Questions**  
-                Ask questions using voice input with Whisper transcription
+                Ask questions using voice input with real-time Whisper transcription
                 """)
             
             # Show API status
