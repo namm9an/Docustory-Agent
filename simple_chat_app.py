@@ -205,6 +205,7 @@ def generate_audio_summary(session_id: str, summary_type: str, voice: str = "Ali
             "voice": voice
         }
         response = requests.post(f"{API_BASE_URL}/generate_audio_summary", json=data)
+        return response
         
         if response.status_code == 200:
             # Check if it's debug response or actual audio
