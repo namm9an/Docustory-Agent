@@ -214,11 +214,42 @@ def process_voice_question(session_id: str, audio_bytes: bytes) -> Optional[dict
             f"{API_BASE_URL}/voice_stream/upload_and_ask", 
             files=files, 
             data=data,
-            timeout=30  # Voice processing can take longer
+            timeout=30,
+            stream=True
         )
         
         if response.status_code == 200:
-            return response.json()
+            # Parse SSE streaming response
+            transcribed_text = ""
+            answer_text = ""
+            
+            for line in response.iter_lines(decode_unicode=True):
+                if line.startswith("data: "):
+                    data_content = line[6:]  # Remove "data: " prefix
+                    if data_content == "[DONE]":
+                        break
+                    try:
+                        json_data = json.loads(data_content)
+                        
+                        # Extract transcribed text from metadata
+                        if json_data.get("type") == "metadata":
+                            transcribed_text = json_data.get("question", "")
+                        
+                        # Accumulate answer text from chunks
+                        elif json_data.get("type") == "text":
+                            answer_text += json_data.get("chunk", "")
+                            
+                    except json.JSONDecodeError:
+                        continue
+            
+            if transcribed_text and answer_text:
+                return {
+                    "transcribed_text": transcribed_text,
+                    "answer": answer_text
+                }
+            else:
+                st.error("Voice processing completed but no valid response received")
+                return None
         else:
             st.error(f"Voice processing failed: {response.text}")
             return None
