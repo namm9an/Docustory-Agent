@@ -97,6 +97,7 @@ class WhisperE2EClient:
             
             # Extract text based on response format
             if response_format == "text":
+                print(transcription)
                 text = transcription
                 language_detected = language if language != "auto" else "en"
                 confidence = 0.95  # Default confidence for text format
