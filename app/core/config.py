@@ -48,11 +48,11 @@ class Settings(BaseSettings):
     WHISPER_API_KEY: str = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE3ODcwNTIxNDksImlhdCI6MTc1NTUxNjE0OSwianRpIjoiZjExNWFlNmYtZWYxNi00YmQ4LWFhMTEtZjg3YzY3NjUyNTU0IiwiaXNzIjoiaHR0cDovL2dhdGV3YXkuZTJlbmV0d29ya3MuY29tL2F1dGgvcmVhbG1zL2FwaW1hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJjOWUzZTQ5OS04ZjQzLTQ1MDItYjY0My03NTRiZmM5YjhlMTkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGltYW51aSIsInNlc3Npb25fc3RhdGUiOiI2MTRkYWU1Yy1lMjNiLTRmZjUtYWVmZS1kYjk3MzA5NzBmNjQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImFwaXVzZXIiLCJkZWZhdWx0LXJvbGVzLWFwaW1hbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjYxNGRhZTVjLWUyM2ItNGZmNS1hZWZlLWRiOTczMDk3MGY2NCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiaXNfcGFydG5lcl9yb2xlIjpmYWxzZSwibmFtZSI6Ik5hbWFuIE1vdWRnaWxsIiwicHJpbWFyeV9lbWFpbCI6Im5hbWFuLm1vdWRnaWxsQGUyZW5ldHdvcmtzLmNvbSIsImlzX3ByaW1hcnlfY29udGFjdCI6dHJ1ZSwicHJlZmVycmVkX3VzZXJuYW1lIjoibmFtYW4ubW91ZGdpbGxAZTJlbmV0d29ya3MuY29tIiwiZ2l2ZW5fbmFtZSI6Ik5hbWFuIiwiZmFtaWx5X25hbWUiOiJNb3VkZ2lsbCIsImVtYWlsIjoibmFtYW4ubW91ZGdpbGxAZTJlbmV0d29ya3MuY29tIiwiaXNfaW5kaWFhaV91c2VyIjpmYWxzZX0.OCuD0RF4wKiWx-4sjsyCqGPmQB-pZcJ_UpP41hIxrzl6u4LmKhsBan6WNiDRDkLYI5Y1cULLieqiepTv5b58jy83w6JloSZV4AtkSRYm8i6q32FEqqPiL47f5clMSJIFv9q0cp_UhjiDncJEoPzy8AQdOYrPUzM44lKWwnZ8UAE" 
     WHISPER_MODEL: str = "whisper-large"
     
-    # TTS Service Configuration (Your XTTS v2 Server)
-    TTS_ENDPOINT: str = "http://164.52.192.118:8000"
-    TTS_API_KEY: str = ""  # Not needed for your server
+    # TTS Service Configuration
+    TTS_ENDPOINT: str = "http://localhost:8002"  # Default fallback, override in .env
+    TTS_API_KEY: str = ""  # Not needed for local server
     TTS_MODEL: str = "xtts_v2"
-    TTS_PROVIDER: str = "your_xtts_server"
+    TTS_PROVIDER: str = "xtts_server"
     
     # Optional Features
     ENABLE_YAKE_SEARCH: bool = True
